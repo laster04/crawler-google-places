@@ -682,3 +682,24 @@ module.exports.extractImages = async ({ page, maxImages }) => {
 
     return enlargeImageUrls(resultImageUrls);
 };
+
+module.exports.extractRestaurantDeliveryServices = (jsonData) => {
+    const baseServiceOptions = jsonData?.[100]?.[1];
+    let serviceOptions = [];
+    const finalServiceOptions = [];
+    if (baseServiceOptions && baseServiceOptions.length > 0){
+        for (const bso of baseServiceOptions) {
+            const [type] = bso;
+            if (type === 'service_options') {
+                serviceOptions = bso?.[2];
+            }
+        }
+        if (serviceOptions.length > 0) {
+            for (const so of serviceOptions) {
+                const option = so?.[2]?.[2]?.[1];
+                finalServiceOptions.push(option);
+            }
+        }
+    }
+    return finalServiceOptions;
+};

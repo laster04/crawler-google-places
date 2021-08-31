@@ -7,7 +7,7 @@ const Stats = require('./stats'); // eslint-disable-line no-unused-vars
 
 const {
     extractPageData, extractPopularTimes, extractOpeningHours, extractPeopleAlsoSearch,
-    extractAdditionalInfo, extractReviews, extractImages
+    extractAdditionalInfo, extractReviews, extractImages, extractRestaurantDeliveryServices
 } = require('./extractors');
 const { DEFAULT_TIMEOUT, PLACE_TITLE_SEL } = require('./consts');
 const { waitForGoogleMapLoader } = require('./utils');
@@ -126,6 +126,8 @@ module.exports.handlePlaceDetail = async (options) => {
 
     const defaultReviewsJson = jsonData?.[52]?.[0];
 
+    const restaurantServiceOptions = extractRestaurantDeliveryServices(jsonData);
+
     const detail = {
         ...pageData,
         totalScore,
@@ -139,6 +141,7 @@ module.exports.handlePlaceDetail = async (options) => {
         scrapedAt: new Date().toISOString(),
         ...includeHistogram ? await extractPopularTimes({ page }) : {},
         openingHours: includeOpeningHours ? await extractOpeningHours({ page }) : undefined,
+        restaurantServiceOptions: restaurantServiceOptions.length > 0 ? restaurantServiceOptions : undefined,
         peopleAlsoSearch: includePeopleAlsoSearch ? await extractPeopleAlsoSearch({ page }) : undefined,
         additionalInfo: additionalInfo ? await extractAdditionalInfo({ page }) : undefined,
         reviewsCount,
@@ -164,7 +167,7 @@ module.exports.handlePlaceDetail = async (options) => {
         orderBy,
     };
 
-    
+
     await Apify.pushData(detail);
     stats.places();
     log.info(`[PLACE]: Place scraped successfully --- ${url}`);
